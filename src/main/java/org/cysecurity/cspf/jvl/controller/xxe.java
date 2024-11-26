@@ -35,33 +35,39 @@ public class xxe extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        try
-        {
-          InputStream xml=request.getInputStream();
-          DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-          DocumentBuilder builder = factory.newDocumentBuilder();
-          InputSource is = new InputSource(xml); 	
-          Document doc = builder.parse(is);
-          Element element = doc.getDocumentElement();
-          NodeList nodes = element.getChildNodes();
-          out.print("<br/>Result:<br/>");
-          out.print("---------------------<br/>");
-          for (int i = 0; i < nodes.getLength(); i++) {
+protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    response.setContentType("text/html;charset=UTF-8");
+    PrintWriter out = response.getWriter();
+    try
+    {
+        InputStream xml=request.getInputStream();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        // Disable external entities
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        InputSource is = new InputSource(xml);
+        Document doc = builder.parse(is);
+        Element element = doc.getDocumentElement();
+        NodeList nodes = element.getChildNodes();
+        out.print("<br/>Result:<br/>");
+        out.print("---------------------<br/>");
+        for (int i = 0; i < nodes.getLength(); i++) {
             out.print(nodes.item(i).getNodeName()+" : " + nodes.item(i).getFirstChild().getNodeValue().toString());
             out.print("<br/>");
-         }
         }
-        catch(Exception ex)
-        {
-            out.print(ex);
-        }
-        finally {
-            out.close();
-        }
+    }
+    catch(Exception ex)
+    {
+        out.print(ex);
+    }
+    finally {
+        out.close();
+    }
+}
+
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -104,3 +110,4 @@ public class xxe extends HttpServlet {
     }// </editor-fold>
 
 }
+
