@@ -27,50 +27,52 @@ public class XPathQuery extends HttpServlet {
 
 
             
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        try {
-            String user=request.getParameter("username");
-            String pass=request.getParameter("password");
-            
-            //XML Source:
-            String XML_SOURCE=getServletContext().getRealPath("/WEB-INF/users.xml");
-            
-            //Parsing XML:
-            DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder=factory.newDocumentBuilder();
-            Document xDoc=builder.parse(XML_SOURCE);
-            
-            XPath xPath=XPathFactory.newInstance().newXPath();
-            
-            //XPath Query:
-            String xPression="/users/user[username='"+user+"' and password='"+pass+"']/name";
-            
-            //running Xpath query:
-            String name=xPath.compile(xPression).evaluate(xDoc);
-            out.println(name);
-            if(name.isEmpty())
-            {
-                response.sendRedirect(response.encodeURL("ForwardMe?location=/vulnerability/Injection/xpath_login.jsp?err=Invalid Credentials"));
-            }
-            else
-            {
-                 HttpSession session=request.getSession();
-                 session.setAttribute("isLoggedIn", "1");
-                  session.setAttribute("user", name);
-                 response.sendRedirect(response.encodeURL("ForwardMe?location=/index.jsp"));                                  
-            }
-        } 
-        catch(Exception e)
+protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    response.setContentType("text/html;charset=UTF-8");
+    PrintWriter out = response.getWriter();
+    try {
+        String user=Encode.forHtml(request.getParameter("username")); // Sanitize user input
+        String pass=Encode.forHtml(request.getParameter("password")); // Sanitize user input
+        
+        //XML Source:
+        String XML_SOURCE=getServletContext().getRealPath("/WEB-INF/users.xml");
+        
+        //Parsing XML:
+        DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder=factory.newDocumentBuilder();
+        Document xDoc=builder.parse(XML_SOURCE);
+        
+        XPath xPath=XPathFactory.newInstance().newXPath();
+        
+        //XPath Query:
+        String xPression="/users/user[username='"+user+"' and password='"+pass+"']/name";
+        
+        //running Xpath query:
+        String name=xPath.compile(xPression).evaluate(xDoc);
+        out.println(name);
+        if(name.isEmpty())
         {
-            out.print(e);
-        }        
-        finally {
-            out.close();
+            response.sendRedirect(response.encodeURL("ForwardMe?location=/vulnerability/Injection/xpath_login.jsp?err=Invalid Credentials"));
         }
+        else
+        {
+             HttpSession session=request.getSession();
+             session.setAttribute("isLoggedIn", "1");
+              session.setAttribute("user", name);
+             response.sendRedirect(response.encodeURL("ForwardMe?location=/index.jsp"));                                  
+        }
+    } 
+    catch(Exception e)
+    {
+        out.print(e);
+    }        
+    finally {
+        out.close();
+    }
+}
+
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -113,3 +115,4 @@ public class XPathQuery extends HttpServlet {
     }// </editor-fold>
 
 }
+
